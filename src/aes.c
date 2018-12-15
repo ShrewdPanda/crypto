@@ -4,7 +4,7 @@
 #define NUM_COLS 4
 
 
-int CatVar(int m, int n)
+int ConcatVar(int m, int n)
 {
 	int pow = 10;
 	while (n >= pow)
@@ -25,7 +25,7 @@ void CreateArray(int InBlock[NUM_ROWS][NUM_COLS])
 	{
 		for (n = 0; n < NUM_COLS; n++)
 		{	
-			InBlock[m][n] = CatVar(m, n);
+			InBlock[m][n] = ConcatVar(m, n);
 			printf("%d ", InBlock[m][n]);
 		}
 		printf("\n");
