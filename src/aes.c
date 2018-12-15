@@ -19,7 +19,10 @@ void ShiftRows(int InBlock[NUM_ROWS][NUM_COLS])
 	{
 		for (int n = 0; n < NUM_COLS; n++)
 		{
-			SBlock[m][n] = InBlock[m][((n - m) % 4)];	
+			if (m % 2 == 0)
+				SBlock[m][n] = InBlock[m][((n + m) % 4)];
+			else if (m % 2 == 1)
+				SBlock[m][n] = InBlock[m][((n + (m + 2)) % 4)];	
 			printf("%d ", SBlock[m][n]);
 		}
 		printf("\n");
