@@ -3,7 +3,6 @@
 #define NUM_ROWS 4
 #define NUM_COLS 4
 
-
 int ConcatVar(int m, int n)
 {
 	int pow = 10;
@@ -13,8 +12,18 @@ int ConcatVar(int m, int n)
 }
 
 void ShiftRows(int InBlock[NUM_ROWS][NUM_COLS])
-{
-	
+{	
+	int SBlock[NUM_ROWS][NUM_COLS];
+
+	for (int m = 0; m < NUM_ROWS; m++)
+	{
+		for (int n = 0; n < NUM_COLS; n++)
+		{
+			SBlock[m][n] = InBlock[m][((n - m) % 4)];	
+			printf("%d ", SBlock[m][n]);
+		}
+		printf("\n");
+	}
 }
 
 void CreateArray(int InBlock[NUM_ROWS][NUM_COLS])
@@ -30,7 +39,7 @@ void CreateArray(int InBlock[NUM_ROWS][NUM_COLS])
 		}
 		printf("\n");
 	}
-
+	printf("\n\n");
 	ShiftRows(InBlock);
 }
 
