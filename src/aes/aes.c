@@ -11,34 +11,32 @@ int ConcatVar(int m, int n)
 	return m * pow + n;
 }
 
-void MixColumns(int InBlock[NUM_ROWS][NUM_COLS], int SBlock[NUM_ROWS][NUM_COLS])
+void MixColumns(int InBlock[NUM_ROWS][NUM_COLS], int State[NUM_ROWS][NUM_COLS])
 {
 
 }
 
-void ShiftRows(int InBlock[NUM_ROWS][NUM_COLS], int SBlock[NUM_ROWS][NUM_COLS])
+void ShiftRows(int InBlock[NUM_ROWS][NUM_COLS], int State[NUM_ROWS][NUM_COLS])
 {	
 	for (int m = 0; m < NUM_ROWS; m++)
 	{
 		for (int n = 0; n < NUM_COLS; n++)
 		{
 			if (m % 2 == 0)
-				SBlock[m][n] = InBlock[m][((n + m) % NUM_COLS)];
+				State[m][n] = InBlock[m][((n + m) % NUM_COLS)];
 			else if (m % 2 == 1)
-				SBlock[m][n] = InBlock[m][((n + (m + (NUM_COLS / 2))) % NUM_COLS)];	
-			printf("%d ", SBlock[m][n]);
+				State[m][n] = InBlock[m][((n + (m + (NUM_COLS / 2))) % NUM_COLS)];	
+			printf("%d ", State[m][n]);
 		}
 		printf("\n");
 	}
 }
 
-void EncryptRounds(int InBlock[NUM_ROWS][NUM_COLS], int SBlock[NUM_ROWS][NUM_COLS])
+void EncryptRounds(int InBlock[NUM_ROWS][NUM_COLS], int State[NUM_ROWS][NUM_COLS])
 {	
-	int m, n;
-
-	for (m = 0; m < NUM_ROWS; m++)
+	for (int m = 0; m < NUM_ROWS; m++)
 	{
-		for (n = 0; n < NUM_COLS; n++)
+		for (int n = 0; n < NUM_COLS; n++)
 		{	
 			InBlock[m][n] = ConcatVar(m, n);
 			printf("%d ", InBlock[m][n]);
@@ -47,14 +45,14 @@ void EncryptRounds(int InBlock[NUM_ROWS][NUM_COLS], int SBlock[NUM_ROWS][NUM_COL
 	}
 	printf("\n\n");
 	
-	ShiftRows(InBlock, SBlock);
-	MixColumns(InBlock, SBlock);
+	ShiftRows(InBlock, State);
+	MixColumns(InBlock, State);
 }
 
 
 int main(void)
 {
-	int InBlock[NUM_ROWS][NUM_COLS], SBlock[NUM_ROWS][NUM_COLS];	
+	int InBlock[NUM_ROWS][NUM_COLS], State[NUM_ROWS][NUM_COLS];	
 	
-	EncryptRounds(InBlock, SBlock);
+	EncryptRounds(InBlock, State);
 }
