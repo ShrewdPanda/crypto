@@ -11,10 +11,13 @@ int ConcatVar(int m, int n)
 	return m * pow + n;
 }
 
-void ShiftRows(int InBlock[NUM_ROWS][NUM_COLS])
-{	
-	int SBlock[NUM_ROWS][NUM_COLS];
+void MixColumns(int InBlock[NUM_ROWS][NUM_COLS], int SBlock[NUM_ROWS][NUM_COLS])
+{
 
+}
+
+void ShiftRows(int InBlock[NUM_ROWS][NUM_COLS], int SBlock[NUM_ROWS][NUM_COLS])
+{	
 	for (int m = 0; m < NUM_ROWS; m++)
 	{
 		for (int n = 0; n < NUM_COLS; n++)
@@ -29,7 +32,7 @@ void ShiftRows(int InBlock[NUM_ROWS][NUM_COLS])
 	}
 }
 
-void CreateArray(int InBlock[NUM_ROWS][NUM_COLS])
+void CreateArray(int InBlock[NUM_ROWS][NUM_COLS], int SBlock[NUM_ROWS][NUM_COLS])
 {	
 	int m, n;
 
@@ -43,13 +46,17 @@ void CreateArray(int InBlock[NUM_ROWS][NUM_COLS])
 		printf("\n");
 	}
 	printf("\n\n");
-	ShiftRows(InBlock);
+	ShiftRows(InBlock, SBlock);
+	
+	printf("\n\n%d", SBlock[1][0]);
+	
+	MixColumns(InBlock, SBlock);
 }
 
 
 int main(void)
 {
-	int InBlock[NUM_ROWS][NUM_COLS];
+	int InBlock[NUM_ROWS][NUM_COLS], SBlock[NUM_ROWS][NUM_COLS];	
 	
-	CreateArray(InBlock);
+	CreateArray(InBlock, SBlock);
 }
