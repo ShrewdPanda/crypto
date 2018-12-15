@@ -32,7 +32,7 @@ void ShiftRows(int InBlock[NUM_ROWS][NUM_COLS], int SBlock[NUM_ROWS][NUM_COLS])
 	}
 }
 
-void CreateArray(int InBlock[NUM_ROWS][NUM_COLS], int SBlock[NUM_ROWS][NUM_COLS])
+void EncryptRounds(int InBlock[NUM_ROWS][NUM_COLS], int SBlock[NUM_ROWS][NUM_COLS])
 {	
 	int m, n;
 
@@ -46,10 +46,8 @@ void CreateArray(int InBlock[NUM_ROWS][NUM_COLS], int SBlock[NUM_ROWS][NUM_COLS]
 		printf("\n");
 	}
 	printf("\n\n");
+	
 	ShiftRows(InBlock, SBlock);
-	
-	printf("\n\n%d", SBlock[1][0]);
-	
 	MixColumns(InBlock, SBlock);
 }
 
@@ -58,5 +56,5 @@ int main(void)
 {
 	int InBlock[NUM_ROWS][NUM_COLS], SBlock[NUM_ROWS][NUM_COLS];	
 	
-	CreateArray(InBlock, SBlock);
+	EncryptRounds(InBlock, SBlock);
 }
