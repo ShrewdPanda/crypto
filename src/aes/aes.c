@@ -22,16 +22,16 @@ void MixColumns(int State[NUM_ROWS][NUM_COLS])
 	}
 }
 
-void ShiftRows(int InBlock[NUM_ROWS][NUM_COLS], int State[NUM_ROWS][NUM_COLS])
+void ShiftRows(int State[NUM_ROWS][NUM_COLS])
 {	
 	for (int m = 0; m < NUM_ROWS; m++)
 	{
 		for (int n = 0; n < NUM_COLS; n++)
 		{
 			if (m % 2 == 0)
-				State[m][n] = InBlock[m][((n + m) % NUM_COLS)];
+				State[m][n] = State[m][((n + m) % NUM_COLS)];
 			else if (m % 2 == 1)
-				State[m][n] = InBlock[m][((n + (m + (NUM_COLS / 2))) % NUM_COLS)];	
+				State[m][n] = State[m][((n + (m + (NUM_COLS / 2))) % NUM_COLS)];	
 		}
 	}
 }
@@ -43,10 +43,11 @@ void EncryptRounds(int InBlock[NUM_ROWS][NUM_COLS], int State[NUM_ROWS][NUM_COLS
 		for (int n = 0; n < NUM_COLS; n++)
 		{	
 			InBlock[m][n] = ConcatVars(m, n);
+			State[m][n] = InBlock[m][n];
 		}
 	}
 	
-	ShiftRows(InBlock, State);
+	ShiftRows(State);
 	MixColumns(State);
 }
 
