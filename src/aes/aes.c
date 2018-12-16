@@ -1,7 +1,8 @@
 #include <stdio.h>
 
 #define NUM_BITS 8
-#define NUM_ROWS, NUM_COLS 4
+#define NUM_ROWS 4
+#define NUM_COLS 4
 #define c 0x63
 
 void BitScrambler(int State[NUM_ROWS][NUM_COLS])
@@ -10,7 +11,10 @@ void BitScrambler(int State[NUM_ROWS][NUM_COLS])
 	{
 		for (int n = 0; n < NUM_COLS; n++)
 		{
-			State[m][n] = State[m][n] ^ ((State[m][n] << 4 ) | (State[m][n] >> (NUM_BITS - 4))) ^ (((State[m][n]) << 5) | (State[m][n] >> (NUM_BITS - 5))) ^ (((State[m][n]) << 6) | (State[m][n] >> (NUM_BITS - 6))) ^ (((State[m][n]) << 7) | (State[m][n] >> (NUM_BITS - 7))) ^ c; 
+			State[m][n] = State[m][n] ^ (((State[m][n] << 4 ) | (State[m][n] >> (NUM_BITS - 4))) % NUM_BITS) ^ \
+				      ((((State[m][n]) << 5) | (State[m][n] >> (NUM_BITS - 5))) % NUM_BITS) ^ \
+				      ((((State[m][n]) << 6) | (State[m][n] >> (NUM_BITS - 6))) % NUM_BITS) ^ \
+				      ((((State[m][n]) << 7) | (State[m][n] >> (NUM_BITS - 7))) % NUM_BITS) ^ c; 
 		}
 	}	
 }
@@ -38,7 +42,8 @@ void MixColumns(int State[NUM_ROWS][NUM_COLS])
 	{
 		for (int n = 0; n < NUM_COLS; n++)
 		{
-			State[m][n] = (State[m][n] * 2) ^ ((State[(m + 2) % NUM_ROWS][n]) * 3) ^ (State[(m + 3) % NUM_ROWS][n]) ^ (State[((m + 4) % NUM_ROWS)][n]);
+			State[m][n] = (State[m][n] * 2) ^ ((State[(m + 2) % NUM_ROWS][n]) * 3) ^ \
+				      (State[(m + 3) % NUM_ROWS][n]) ^ (State[((m + 4) % NUM_ROWS)][n]);
 		}
 	}
 }
