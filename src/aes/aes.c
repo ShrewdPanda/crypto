@@ -1,12 +1,18 @@
 #include <stdio.h>
 
-#define NUM_ROWS 4
-#define NUM_COLS 4
-
+#define NUM_BITS 8
+#define NUM_ROWS, NUM_COLS 4
+#define c 0x63
 
 void BitScrambler(int State[NUM_ROWS][NUM_COLS])
 {
-
+	for (int m = 0; m < NUM_ROWS; m++)
+	{
+		for (int n = 0; n < NUM_COLS; n++)
+		{
+			State[m][n] = State[m][n] ^ ((State[m][n] << 4 ) | (State[m][n] >> (NUM_BITS - 4))) ^ (((State[m][n]) << 5) | (State[m][n] >> (NUM_BITS - 5))) ^ (((State[m][n]) << 6) | (State[m][n] >> (NUM_BITS - 6))) ^ (((State[m][n]) << 7) | (State[m][n] >> (NUM_BITS - 7))) ^ c; 
+		}
+	}	
 }
 
 
