@@ -3,6 +3,12 @@
 #define NUM_ROWS 4
 #define NUM_COLS 4
 
+
+void BitScrambler(int State[NUM_ROWS][NUM_COLS])
+{
+
+}
+
 int ConcatVars(int m, int n)
 {
 	int pow = 10;
@@ -10,6 +16,14 @@ int ConcatVars(int m, int n)
 		pow *= 10;
 	return m * pow + n;
 }
+
+
+void KeyRounds(int State[NUM_ROWS][NUM_COLS])
+{
+	void KeyExpansion();
+	void ApplyRound();
+}
+
 
 void MixColumns(int State[NUM_ROWS][NUM_COLS])
 {
@@ -21,6 +35,13 @@ void MixColumns(int State[NUM_ROWS][NUM_COLS])
 		}
 	}
 }
+
+
+void MultInv(int State[NUM_ROWS][NUM_COLS])
+{
+
+}
+
 
 void ShiftRows(int State[NUM_ROWS][NUM_COLS])
 {	
@@ -36,7 +57,15 @@ void ShiftRows(int State[NUM_ROWS][NUM_COLS])
 	}
 }
 
-void EncryptRounds(int InBlock[NUM_ROWS][NUM_COLS], int State[NUM_ROWS][NUM_COLS])
+
+void SubBytes(int State[NUM_ROWS][NUM_COLS])
+{
+	MultInv(State);
+	BitScrambler(State);	
+}
+
+
+void Encrypt(int InBlock[NUM_ROWS][NUM_COLS], int State[NUM_ROWS][NUM_COLS])
 {	
 	for (int m = 0; m < NUM_ROWS; m++)
 	{
@@ -46,9 +75,11 @@ void EncryptRounds(int InBlock[NUM_ROWS][NUM_COLS], int State[NUM_ROWS][NUM_COLS
 			State[m][n] = InBlock[m][n];
 		}
 	}
-	
+
+	SubBytes(State);	
 	ShiftRows(State);
 	MixColumns(State);
+	KeyRounds(State);
 }
 
 
@@ -56,5 +87,5 @@ int main(void)
 {
 	int InBlock[NUM_ROWS][NUM_COLS], State[NUM_ROWS][NUM_COLS];	
 	
-	EncryptRounds(InBlock, State);
+	Encrypt(InBlock, State);
 }
