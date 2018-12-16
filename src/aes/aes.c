@@ -9,6 +9,7 @@ void BitScrambler(int State[NUM_ROWS][NUM_COLS])
 
 }
 
+
 int ConcatVars(int m, int n)
 {
 	int pow = 10;
@@ -20,7 +21,7 @@ int ConcatVars(int m, int n)
 
 void KeyRounds(int State[NUM_ROWS][NUM_COLS])
 {
-	void KeyExpansion();
+	void ExpandKeys();
 	void ApplyRound();
 }
 
@@ -31,7 +32,7 @@ void MixColumns(int State[NUM_ROWS][NUM_COLS])
 	{
 		for (int n = 0; n < NUM_COLS; n++)
 		{
-			State[m][n] = (State[m][n] * 2) + ((State[(m + 2) % NUM_ROWS][n]) * 3) + (State[(m + 3) % NUM_ROWS][n]) + (State[((m + 4) % NUM_ROWS)][n]);
+			State[m][n] = (State[m][n] * 2) ^ ((State[(m + 2) % NUM_ROWS][n]) * 3) ^ (State[(m + 3) % NUM_ROWS][n]) ^ (State[((m + 4) % NUM_ROWS)][n]);
 		}
 	}
 }
