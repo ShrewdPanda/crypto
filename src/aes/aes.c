@@ -145,7 +145,7 @@ int main(int argc, char* argv[])
 		else if (strncmp(argv[1], "-d", 2) == 0)
 			Decrypt(InBlock, State);
 		else
-			printf("Something's not right: Aborting program.\n");
+			printf("In these parts, we either Encrypt (-e), or we Decrypt (-d).\nWhich is it gonna be?\n");
 			return 1;
 	}
 }
