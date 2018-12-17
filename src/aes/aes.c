@@ -140,7 +140,7 @@ int main(int argc, char* argv[])
 	}
 	else
 	{	
-		if (strncmp(argv[1], "-d", 2) == 0)
+		if (strncmp(argv[1], "-e", 2) == 0)
 			Encrypt(InBlock, State);
 		else if (strncmp(argv[1], "-d", 2) == 0)
 			Decrypt(InBlock, State);
