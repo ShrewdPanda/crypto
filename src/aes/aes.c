@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 
 #define NUM_BITS 8
 #define NUM_ROWS 4
@@ -26,6 +27,30 @@ int ConcatVars(int m, int n)
 	while (n >= pow)
 		pow *= 10;
 	return m * pow + n;
+}
+
+
+void InvKeyRounds(int State[NUM_ROWS][NUM_COLS])
+{
+
+}
+
+
+void InvMixColumns(int State[NUM_ROWS][NUM_COLS])
+{
+
+}
+
+
+void InvShiftRows(int State[NUM_ROWS][NUM_COLS])
+{
+
+}
+
+
+void InvSubBytes(int State[NUM_ROWS][NUM_COLS])	
+{
+
 }
 
 
@@ -77,6 +102,15 @@ void SubBytes(int State[NUM_ROWS][NUM_COLS])
 }
 
 
+void Decrypt(int InBlock[NUM_ROWS][NUM_COLS], int State[NUM_ROWS][NUM_COLS])
+{
+	InvSubBytes(State);	
+	InvShiftRows(State);
+	InvMixColumns(State);
+	InvKeyRounds(State);
+}
+
+
 void Encrypt(int InBlock[NUM_ROWS][NUM_COLS], int State[NUM_ROWS][NUM_COLS])
 {	
 	for (int m = 0; m < NUM_ROWS; m++)
@@ -95,9 +129,23 @@ void Encrypt(int InBlock[NUM_ROWS][NUM_COLS], int State[NUM_ROWS][NUM_COLS])
 }
 
 
-int main(void)
+int main(int argc, char* argv[])
 {
 	int InBlock[NUM_ROWS][NUM_COLS], State[NUM_ROWS][NUM_COLS];	
-	
-	Encrypt(InBlock, State);
+
+	if (argc < 3)
+	{
+		printf("Usage: aes [-e, -d] <file>\n");
+		return 1;
+	}
+	else
+	{	
+		if (strncmp(argv[1], "-d", 2) == 0)
+			Encrypt(InBlock, State);
+		else if (strncmp(argv[1], "-d", 2) == 0)
+			Decrypt(InBlock, State);
+		else
+			printf("Something's not right: Aborting program.\n");
+			return 1;
+	}
 }
