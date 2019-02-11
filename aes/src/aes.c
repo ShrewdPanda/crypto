@@ -1,10 +1,15 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
+#define DEFAULT_KEYSIZE 128
+
 #define NUM_BITS 8
-#define NUM_ROWS 4
 #define NUM_COLS 4
+#define NUM_ROWS 4
+
 #define c 0x63
+
 
 void BitScrambler(int State[NUM_ROWS][NUM_COLS])
 {
@@ -29,6 +34,16 @@ int ConcatVars(int m, int n)
 	return m * pow + n;
 }
 
+int GetKey(int argc, char *argv[])
+{
+	for (int i = 0; i < argc; i++)
+	{
+		if (strncmp("-k", argv[i], argc) == 0)
+			return atoi(argv[i + 1]);	
+		else
+			return DEFAULT_KEYSIZE;
+	}
+}
 
 void InvKeyRounds(int State[NUM_ROWS][NUM_COLS])
 {
@@ -102,16 +117,22 @@ void SubBytes(int State[NUM_ROWS][NUM_COLS])
 }
 
 
-void Decrypt(int InBlock[NUM_ROWS][NUM_COLS], int State[NUM_ROWS][NUM_COLS])
+void Decrypt(int InBlock[NUM_ROWS][NUM_COLS], int State[NUM_ROWS][NUM_COLS], int num_rounds)
 {
-	InvSubBytes(State);	
-	InvShiftRows(State);
-	InvMixColumns(State);
-	InvKeyRounds(State);
+	for (int m = 0; m < (num_rounds - 1); m++)
+	{
+		InvSubBytes(State);	
+		InvShiftRows(State);
+		InvMixColumns(State);
+		InvKeyRounds(State);
+	}
+		InvSubBytes(State);
+		InvShiftRows(State);
+		InvKeyRounds(State);
 }
 
 
-void Encrypt(int InBlock[NUM_ROWS][NUM_COLS], int State[NUM_ROWS][NUM_COLS])
+void Encrypt(int InBlock[NUM_ROWS][NUM_COLS], int State[NUM_ROWS][NUM_COLS], int num_rounds)
 {	
 	for (int m = 0; m < NUM_ROWS; m++)
 	{
@@ -122,30 +143,58 @@ void Encrypt(int InBlock[NUM_ROWS][NUM_COLS], int State[NUM_ROWS][NUM_COLS])
 		}
 	}
 
-	SubBytes(State);	
-	ShiftRows(State);
-	MixColumns(State);
-	KeyRounds(State);
+	for (int m = 0; m < (num_rounds - 1); m++)
+	{
+		SubBytes(State);	
+		ShiftRows(State);
+		MixColumns(State);
+		KeyRounds(State);
+	}
+		SubBytes(State);
+		ShiftRows(State);
+		KeyRounds(State);
 }
 
-
-int main(int argc, char* argv[])
+void init(int InBlock[NUM_ROWS][NUM_COLS], int State[NUM_ROWS][NUM_COLS], int num_rounds, char *argv[])
 {
+	if (strncmp(argv[1], "-e", 2) == 0)
+		Encrypt(InBlock, State, num_rounds);
+	else if (strncmp(argv[1], "-d", 2) == 0)
+		Decrypt(InBlock, State, num_rounds);
+	else
+	{
+		printf("In these parts, we either Encrypt (-e), or we Decrypt (-d).\nWhat's it gonna be, partner?\n");
+		perror("Operation not declared.\n");
+	}
+}
+
+int main(int argc, char *argv[])
+{
+	int num_rounds = 12;
 	int InBlock[NUM_ROWS][NUM_COLS], State[NUM_ROWS][NUM_COLS];	
 
 	if (argc < 3)
 	{
-		printf("Usage: aes [-e, -d] <file>\n");
+		printf("Usage: aes [-e, -d] <file> [-k <keysize> *optional*]\n");
 		return 1;
 	}
 	else
 	{	
-		if (strncmp(argv[1], "-e", 2) == 0)
-			Encrypt(InBlock, State);
-		else if (strncmp(argv[1], "-d", 2) == 0)
-			Decrypt(InBlock, State);
+		int keysize = GetKey(argc, argv);
+		
+		if (keysize == 128)
+			init(InBlock, State, num_rounds, argv);
+		else if (keysize == 192)
+		{
+			num_rounds = 14;
+			init(InBlock, State, num_rounds, argv);
+		}
+		else if (keysize == 256)
+		{
+			num_rounds = 16;
+			init(InBlock, State, num_rounds, argv);
+		}
 		else
-			printf("In these parts, we either Encrypt (-e), or we Decrypt (-d).\nWhich is it gonna be?\n");
-			return 1;
+			perror("Invalid keysize");	
 	}
 }
