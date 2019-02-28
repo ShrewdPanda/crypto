@@ -2,13 +2,15 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define BUFSIZE 1024
 #define DEFAULT_KEYSIZE 128
+#define MODULO 2
 
 #define NUM_BITS 8
 #define NUM_COLS 4
 #define NUM_ROWS 4
 
-#define c 0x63
+#define C 0x63
 
 
 void BitScrambler(int State[NUM_ROWS][NUM_COLS])
@@ -20,19 +22,11 @@ void BitScrambler(int State[NUM_ROWS][NUM_COLS])
 			State[m][n] = State[m][n] ^ (((State[m][n] << 4 ) | (State[m][n] >> (NUM_BITS - 4))) % NUM_BITS) ^ \
 				      ((((State[m][n]) << 5) | (State[m][n] >> (NUM_BITS - 5))) % NUM_BITS) ^ \
 				      ((((State[m][n]) << 6) | (State[m][n] >> (NUM_BITS - 6))) % NUM_BITS) ^ \
-				      ((((State[m][n]) << 7) | (State[m][n] >> (NUM_BITS - 7))) % NUM_BITS) ^ c; 
+				      ((((State[m][n]) << 7) | (State[m][n] >> (NUM_BITS - 7))) % NUM_BITS) ^ C; 
 		}
 	}	
 }
 
-
-int ConcatVars(int m, int n)
-{
-	int pow = 10;
-	while (n >= pow)
-		pow *= 10;
-	return m * pow + n;
-}
 
 int GetKey(int argc, char *argv[])
 {
@@ -88,12 +82,37 @@ void MixColumns(int State[NUM_ROWS][NUM_COLS])
 	}
 }
 
+int modulo(int stateVal)
+{
+	int initVal = stateVal % MODULO;
+
+	if (initVal < 0)
+		initVal += MODULO;
+	return initVal;
+}
 
 void MultInv(int State[NUM_ROWS][NUM_COLS])
 {
-
+	for (int m; m < NUM_ROWS; m++)
+	{
+		for (int n; n < NUM_COLS; n++)
+		{
+			State[m][n] = modulo(State[m][n]);
+			
+			for (int i = 0; i < MODULO; i++)
+				if (modulo((State[m][n]) * i) == 1)
+					State[m][n] = i;	
+		}
+	}	
 }
 
+
+void SendCipherText()
+{
+	char outBuffer[BUFSIZE];
+	FILE* cipherFile = fopen("cipher.txt", "w");
+	fwrite(outBuffer, sizeof(char), sizeof(outBuffer), cipherFile);
+}
 
 void ShiftRows(int State[NUM_ROWS][NUM_COLS])
 {	
@@ -116,6 +135,10 @@ void SubBytes(int State[NUM_ROWS][NUM_COLS])
 	BitScrambler(State);	
 }
 
+void ConvertToHex(int c)
+{
+		
+}
 
 void Decrypt(int InBlock[NUM_ROWS][NUM_COLS], int State[NUM_ROWS][NUM_COLS], int num_rounds)
 {
@@ -138,29 +161,89 @@ void Encrypt(int InBlock[NUM_ROWS][NUM_COLS], int State[NUM_ROWS][NUM_COLS], int
 	{
 		for (int n = 0; n < NUM_COLS; n++)
 		{	
-			InBlock[m][n] = ConcatVars(m, n);
 			State[m][n] = InBlock[m][n];
 		}
 	}
 
 	for (int m = 0; m < (num_rounds - 1); m++)
 	{
+		printf("Substituting Bytes...\n");
 		SubBytes(State);	
+		printf("Shifting Rows...\n");
 		ShiftRows(State);
+		printf("Mixing Columns...\n");
 		MixColumns(State);
+		printf("Performing Keyrounds...\n");
 		KeyRounds(State);
 	}
 		SubBytes(State);
 		ShiftRows(State);
 		KeyRounds(State);
+		
+		printf("Outputting CipherText...\n");
+		SendCipherText(State);
+}
+
+void GetPlainText(int InBlock[NUM_ROWS][NUM_COLS], char *argv[])
+{
+	int letter, position = 0;
+	
+	FILE* infile = fopen(argv[2], "r");
+	FILE* hexfile = fopen("hex.txt", "w");
+	
+	char inBuffer[BUFSIZE];
+	char hexBuffer[BUFSIZE * 2 + 1];
+	
+	printf("Extracting text...\n");
+
+	while (1)
+	{
+		letter = fgetc(infile);
+		
+		if (letter == EOF)
+			break;
+		else if (letter == '\n')
+		{	
+			inBuffer[position] = '\0';
+			position++;
+		}
+		else
+		{
+			inBuffer[position] = letter;
+			sprintf(hexBuffer + position * 2, "%02X", inBuffer[position]);
+			position++;	
+		}
+	}
+	
+	printf("Exporting hex...\n");
+	fwrite(hexBuffer, sizeof(char), sizeof(hexBuffer), hexfile);
+
+	position = 0;
+
+	// store the hex from outBuffer into InBlock.
+	for (int i = 0; i < NUM_COLS; i++)
+	{
+		for (int j = 0; j < NUM_ROWS; j++)
+		{
+			InBlock[j][i] = hexBuffer[position];
+			position++;
+		}
+	}
+		
 }
 
 void init(int InBlock[NUM_ROWS][NUM_COLS], int State[NUM_ROWS][NUM_COLS], int num_rounds, char *argv[])
 {
 	if (strncmp(argv[1], "-e", 2) == 0)
+	{
+		printf("Encrypting '%s' ...\n", argv[2]);
 		Encrypt(InBlock, State, num_rounds);
+	}
 	else if (strncmp(argv[1], "-d", 2) == 0)
+	{
+		printf("Decrypting '%s' ...\n", argv[2]);
 		Decrypt(InBlock, State, num_rounds);
+	}
 	else
 	{
 		printf("In these parts, we either Encrypt (-e), or we Decrypt (-d).\nWhat's it gonna be, partner?\n");
@@ -180,6 +263,9 @@ int main(int argc, char *argv[])
 	}
 	else
 	{	
+		printf("Opening input file...\n");
+		GetPlainText(InBlock, argv);	
+		
 		int keysize = GetKey(argc, argv);
 		
 		if (keysize == 128)
