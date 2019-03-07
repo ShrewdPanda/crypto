@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define BUFSIZE 1024
+#define BLOCKSIZE 16
 #define DEFAULT_KEYSIZE 128
 #define MODULO 2
 
@@ -13,22 +13,22 @@
 #define C 0x63
 
 
-void BitScrambler(int State[NUM_ROWS][NUM_COLS])
+void bitScrambler(char state[NUM_ROWS][NUM_COLS])
 {
 	for (int m = 0; m < NUM_ROWS; m++)
 	{
 		for (int n = 0; n < NUM_COLS; n++)
 		{
-			State[m][n] = State[m][n] ^ (((State[m][n] << 4 ) | (State[m][n] >> (NUM_BITS - 4))) % NUM_BITS) ^ \
-				      ((((State[m][n]) << 5) | (State[m][n] >> (NUM_BITS - 5))) % NUM_BITS) ^ \
-				      ((((State[m][n]) << 6) | (State[m][n] >> (NUM_BITS - 6))) % NUM_BITS) ^ \
-				      ((((State[m][n]) << 7) | (State[m][n] >> (NUM_BITS - 7))) % NUM_BITS) ^ C; 
+			state[m][n] = state[m][n] ^ (((state[m][n] << 4 ) | (state[m][n] >> (NUM_BITS - 4))) % NUM_BITS) ^ \
+				      ((((state[m][n]) << 5) | (state[m][n] >> (NUM_BITS - 5))) % NUM_BITS) ^ \
+				      ((((state[m][n]) << 6) | (state[m][n] >> (NUM_BITS - 6))) % NUM_BITS) ^ \
+				      ((((state[m][n]) << 7) | (state[m][n] >> (NUM_BITS - 7))) % NUM_BITS) ^ C; 
 		}
 	}	
 }
 
 
-int GetKey(int argc, char *argv[])
+int getKey(int argc, char *argv[])
 {
 	for (int i = 0; i < argc; i++)
 	{
@@ -39,45 +39,45 @@ int GetKey(int argc, char *argv[])
 	}
 }
 
-void InvKeyRounds(int State[NUM_ROWS][NUM_COLS])
+void invKeyRounds(char state[NUM_ROWS][NUM_COLS])
 {
 
 }
 
 
-void InvMixColumns(int State[NUM_ROWS][NUM_COLS])
+void invMixColumns(char state[NUM_ROWS][NUM_COLS])
 {
 
 }
 
 
-void InvShiftRows(int State[NUM_ROWS][NUM_COLS])
+void invShiftRows(char state[NUM_ROWS][NUM_COLS])
 {
 
 }
 
 
-void InvSubBytes(int State[NUM_ROWS][NUM_COLS])	
+void invSubBytes(char state[NUM_ROWS][NUM_COLS])	
 {
 
 }
 
 
-void KeyRounds(int State[NUM_ROWS][NUM_COLS])
+void keyRounds(char state[NUM_ROWS][NUM_COLS])
 {
-	void ExpandKeys();
-	void ApplyRound();
+	void expandKeys();
+	void applyRound();
 }
 
 
-void MixColumns(int State[NUM_ROWS][NUM_COLS])
+void mixColumns(char state[NUM_ROWS][NUM_COLS])
 {
 	for (int m = 0; m < NUM_ROWS; m++)
 	{
 		for (int n = 0; n < NUM_COLS; n++)
 		{
-			State[m][n] = (State[m][n] * 2) ^ ((State[(m + 2) % NUM_ROWS][n]) * 3) ^ \
-				      (State[(m + 3) % NUM_ROWS][n]) ^ (State[((m + 4) % NUM_ROWS)][n]);
+			state[m][n] = (state[m][n] * 2) ^ ((state[(m + 2) % NUM_ROWS][n]) * 3) ^ \
+				      (state[(m + 3) % NUM_ROWS][n]) ^ (state[((m + 4) % NUM_ROWS)][n]);
 		}
 	}
 }
@@ -91,30 +91,42 @@ int modulo(int stateVal)
 	return initVal;
 }
 
-void MultInv(int State[NUM_ROWS][NUM_COLS])
+void multInv(char state[NUM_ROWS][NUM_COLS])
 {
 	for (int m; m < NUM_ROWS; m++)
 	{
 		for (int n; n < NUM_COLS; n++)
 		{
-			State[m][n] = modulo(State[m][n]);
+			state[m][n] = (char) modulo(state[m][n]);
 			
 			for (int i = 0; i < MODULO; i++)
-				if (modulo((State[m][n]) * i) == 1)
-					State[m][n] = i;	
+				if (modulo((state[m][n]) * i) == 1)
+					state[m][n] = i;	
 		}
 	}	
 }
 
 
-void SendCipherText()
+void sendCipherText(char state[NUM_ROWS][NUM_COLS])
 {
-	char outBuffer[BUFSIZE];
-	FILE* cipherFile = fopen("cipher.txt", "w");
-	fwrite(outBuffer, sizeof(char), sizeof(outBuffer), cipherFile);
+	FILE* outFile = fopen("cipher.txt", "w");
+	char fileBuffer[BLOCKSIZE];
+	int position = 0;
+
+	for (int j = 0; j < NUM_COLS; j++)
+	{
+		for (int i = 0; i < NUM_ROWS; i++)
+		{
+			fileBuffer[position] = state[i][j];
+			printf("%c", fileBuffer[position]);
+			position++;
+		}
+	}
+	
+	fwrite(fileBuffer, sizeof(char), sizeof(fileBuffer), outFile);
 }
 
-void ShiftRows(int State[NUM_ROWS][NUM_COLS])
+void shiftRows(char State[NUM_ROWS][NUM_COLS])
 {	
 	for (int m = 0; m < NUM_ROWS; m++)
 	{
@@ -129,120 +141,101 @@ void ShiftRows(int State[NUM_ROWS][NUM_COLS])
 }
 
 
-void SubBytes(int State[NUM_ROWS][NUM_COLS])
+void subBytes(char State[NUM_ROWS][NUM_COLS])
 {
-	MultInv(State);
-	BitScrambler(State);	
+	multInv(State);
+	bitScrambler(State);	
 }
 
-void ConvertToHex(int c)
-{
-		
-}
 
-void Decrypt(int InBlock[NUM_ROWS][NUM_COLS], int State[NUM_ROWS][NUM_COLS], int num_rounds)
+void decrypt(char inBlock[NUM_ROWS][NUM_COLS], char state[NUM_ROWS][NUM_COLS], int num_rounds)
 {
 	for (int m = 0; m < (num_rounds - 1); m++)
 	{
-		InvSubBytes(State);	
-		InvShiftRows(State);
-		InvMixColumns(State);
-		InvKeyRounds(State);
+		invSubBytes(state);	
+		invShiftRows(state);
+		invMixColumns(state);
+		invKeyRounds(state);
 	}
-		InvSubBytes(State);
-		InvShiftRows(State);
-		InvKeyRounds(State);
+		invSubBytes(state);
+		invShiftRows(state);
+		invKeyRounds(state);
 }
 
 
-void Encrypt(int InBlock[NUM_ROWS][NUM_COLS], int State[NUM_ROWS][NUM_COLS], int num_rounds)
+void encrypt(char inBlock[NUM_ROWS][NUM_COLS], char state[NUM_ROWS][NUM_COLS], int num_rounds)
 {	
 	for (int m = 0; m < NUM_ROWS; m++)
 	{
 		for (int n = 0; n < NUM_COLS; n++)
 		{	
-			State[m][n] = InBlock[m][n];
+			state[m][n] = inBlock[m][n];
 		}
 	}
 
 	for (int m = 0; m < (num_rounds - 1); m++)
 	{
 		printf("Substituting Bytes...\n");
-		SubBytes(State);	
+		subBytes(state);	
 		printf("Shifting Rows...\n");
-		ShiftRows(State);
+		shiftRows(state);
 		printf("Mixing Columns...\n");
-		MixColumns(State);
+		mixColumns(state);
 		printf("Performing Keyrounds...\n");
-		KeyRounds(State);
+		keyRounds(state);
 	}
-		SubBytes(State);
-		ShiftRows(State);
-		KeyRounds(State);
+		subBytes(state);
+		shiftRows(state);
+		keyRounds(state);
 		
 		printf("Outputting CipherText...\n");
-		SendCipherText(State);
+		sendCipherText(state);
 }
 
-void GetPlainText(int InBlock[NUM_ROWS][NUM_COLS], char *argv[])
+void getPlainText(char inBlock[NUM_ROWS][NUM_COLS], char *argv[])
 {
-	int letter, position = 0;
+	FILE* inFile = fopen(argv[2], "r");
 	
-	FILE* infile = fopen(argv[2], "r");
-	FILE* hexfile = fopen("hex.txt", "w");
-	
-	char inBuffer[BUFSIZE];
-	char hexBuffer[BUFSIZE * 2 + 1];
-	
+	char fileBuffer[BLOCKSIZE];
+	int position = 0;
+
 	printf("Extracting text...\n");
 
-	while (1)
+	while (fgets(fileBuffer, sizeof(fileBuffer), inFile) != NULL)
 	{
-		letter = fgetc(infile);
-		
-		if (letter == EOF)
-			break;
-		else if (letter == '\n')
-		{	
-			inBuffer[position] = '\0';
-			position++;
-		}
-		else
+		for (int j = 0; j < NUM_COLS; j++)
 		{
-			inBuffer[position] = letter;
-			sprintf(hexBuffer + position * 2, "%02X", inBuffer[position]);
-			position++;	
+			for (int i = 0; i < NUM_ROWS; i++)
+			{
+				if (fileBuffer[position] == '\n')
+				{	
+					inBlock[i][j] = '\0';
+					printf("%c", inBlock[i][j]);
+					position++;
+				}
+				else
+				{
+					inBlock[i][j] = fileBuffer[position];
+					printf("%c", inBlock[i][j]);
+					position++;	
+				}
+			}
 		}
 	}
-	
-	printf("Exporting hex...\n");
-	fwrite(hexBuffer, sizeof(char), sizeof(hexBuffer), hexfile);
-
-	position = 0;
-
-	// store the hex from outBuffer into InBlock.
-	for (int i = 0; i < NUM_COLS; i++)
-	{
-		for (int j = 0; j < NUM_ROWS; j++)
-		{
-			InBlock[j][i] = hexBuffer[position];
-			position++;
-		}
-	}
-		
+	printf("\n");
 }
 
-void init(int InBlock[NUM_ROWS][NUM_COLS], int State[NUM_ROWS][NUM_COLS], int num_rounds, char *argv[])
+void init(char inBlock[NUM_ROWS][NUM_COLS], char state[NUM_ROWS][NUM_COLS], int num_rounds, char *argv[])
 {
 	if (strncmp(argv[1], "-e", 2) == 0)
 	{
 		printf("Encrypting '%s' ...\n", argv[2]);
-		Encrypt(InBlock, State, num_rounds);
+		encrypt(inBlock, state, num_rounds);
 	}
 	else if (strncmp(argv[1], "-d", 2) == 0)
 	{
 		printf("Decrypting '%s' ...\n", argv[2]);
-		Decrypt(InBlock, State, num_rounds);
+		decrypt(inBlock, state, num_rounds);
 	}
 	else
 	{
@@ -254,7 +247,7 @@ void init(int InBlock[NUM_ROWS][NUM_COLS], int State[NUM_ROWS][NUM_COLS], int nu
 int main(int argc, char *argv[])
 {
 	int num_rounds = 12;
-	int InBlock[NUM_ROWS][NUM_COLS], State[NUM_ROWS][NUM_COLS];	
+	char inBlock[NUM_ROWS][NUM_COLS], state[NUM_ROWS][NUM_COLS];	
 
 	if (argc < 3)
 	{
@@ -264,21 +257,21 @@ int main(int argc, char *argv[])
 	else
 	{	
 		printf("Opening input file...\n");
-		GetPlainText(InBlock, argv);	
+		getPlainText(inBlock, argv);	
 		
-		int keysize = GetKey(argc, argv);
+		int keysize = getKey(argc, argv);
 		
 		if (keysize == 128)
-			init(InBlock, State, num_rounds, argv);
+			init(inBlock, state, num_rounds, argv);
 		else if (keysize == 192)
 		{
 			num_rounds = 14;
-			init(InBlock, State, num_rounds, argv);
+			init(inBlock, state, num_rounds, argv);
 		}
 		else if (keysize == 256)
 		{
 			num_rounds = 16;
-			init(InBlock, State, num_rounds, argv);
+			init(inBlock, state, num_rounds, argv);
 		}
 		else
 			perror("Invalid keysize");	
