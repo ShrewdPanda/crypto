@@ -12,6 +12,8 @@
 
 #define C 0x63
 
+void multInv();
+
 
 void bitScrambler(char state[NUM_ROWS][NUM_COLS])
 {
@@ -19,14 +21,28 @@ void bitScrambler(char state[NUM_ROWS][NUM_COLS])
 	{
 		for (int n = 0; n < NUM_COLS; n++)
 		{
-			state[m][n] = state[m][n] ^ (((state[m][n] << 4 ) | (state[m][n] >> (NUM_BITS - 4))) % NUM_BITS) ^ \
-				      ((((state[m][n]) << 5) | (state[m][n] >> (NUM_BITS - 5))) % NUM_BITS) ^ \
-				      ((((state[m][n]) << 6) | (state[m][n] >> (NUM_BITS - 6))) % NUM_BITS) ^ \
-				      ((((state[m][n]) << 7) | (state[m][n] >> (NUM_BITS - 7))) % NUM_BITS) ^ C; 
+			state[m][n] = state[m][n] ^ (((state[m][n] << 4) % NUM_BITS) ^ \
+				      (((state[m][n]) << 5) % NUM_BITS) ^ \
+				      (((state[m][n]) << 6) % NUM_BITS) ^ \
+				      (((state[m][n]) << 7) % NUM_BITS)) ^ C; 
 		}
 	}	
 }
 
+void bitUnScrambler(char state[NUM_ROWS][NUM_COLS])
+{
+	for (int m = 0; m < NUM_ROWS; m++)
+	{
+		for (int n = 0; n < NUM_COLS; n++)
+		{
+			state[m][n] = state[m][n] ^ (((state[m][n] >> 4) % NUM_BITS) ^ \
+				      (((state[m][n]) >> 5) % NUM_BITS) ^ \
+				      (((state[m][n]) >> 6) % NUM_BITS) ^ \
+				      (((state[m][n]) >> 7) % NUM_BITS)) ^ C; 
+		}
+	}	
+	
+}
 
 int getKey(int argc, char *argv[])
 {
@@ -59,7 +75,7 @@ void invShiftRows(char state[NUM_ROWS][NUM_COLS])
 
 void invSubBytes(char state[NUM_ROWS][NUM_COLS])	
 {
-
+	multInv(state);
 }
 
 
