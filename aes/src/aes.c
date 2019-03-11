@@ -4,7 +4,7 @@
 
 #define BLOCKSIZE 16
 #define DEFAULT_KEYSIZE 128
-#define MODULO 2
+#define MODULO 256
 
 #define NUM_BITS 8
 #define NUM_COLS 4
@@ -63,7 +63,14 @@ void invKeyRounds(char state[NUM_ROWS][NUM_COLS])
 
 void invMixColumns(char state[NUM_ROWS][NUM_COLS])
 {
-
+	for (int m = 0; m < NUM_ROWS; m++)
+	{
+		for (int n = 0; n < NUM_COLS; n++)
+		{
+			state[m][n] = (state[m][n] * 2) ^ ((state[(m + 2) % NUM_ROWS][n]) * 3) ^ \
+				      (state[(m + 3) % NUM_ROWS][n]) ^ (state[((m + 4) % NUM_ROWS)][n]);
+		}
+	}
 }
 
 
@@ -98,47 +105,17 @@ void mixColumns(char state[NUM_ROWS][NUM_COLS])
 	}
 }
 
-int multiply(int a, int b, char log_table[256], char antilog[255])
-{
-	if (a == 0) return 0;
-	
-	int x = log_table[a];
-	int y = log_table[b];
-	int log_mult = (x + y) % 255;
-
-	return antilog[log_mult];
-}
-
-
-char bitwiseInv(char value, char log_table[256], char antilog[255])
-{
-	if (value == 0) return 0;
-	
-	const int aux = 3;
-	log_table[0] = 0;
-	
-	for (int i = 0, x = 1; i < 255; x = multiply(x, aux, log_table, antilog), i++)
-	{
-		log_table[x] = i;
-		antilog[i] = x;
-	}
-
-	int y = log_table[atoi(&value)];
-	int log_inv = 255 - y;
-
-	return antilog[log_inv];		
-}
-
-
 void multInv(char block[NUM_ROWS][NUM_COLS])
 {
-	char log_table[256], antilog[255];
-	
-	for (int m; m < NUM_ROWS; m++)
+	for (int m = 0; m < NUM_ROWS; m++)
 	{
-		for (int n; n < NUM_COLS; n++)
+		for (int n = 0; n < NUM_COLS; n++)
 		{
-			block[m][n] = bitwiseInv(block[m][n], log_table, antilog);
+			for (int i = 0; i < MODULO; i++)
+			{	
+				if ((block[m][n] & i % MODULO) == 1)
+					block[m][n] = i;
+			}
 		}
 	}	
 }
