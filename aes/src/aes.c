@@ -98,30 +98,50 @@ void mixColumns(char state[NUM_ROWS][NUM_COLS])
 	}
 }
 
-int modulo(int stateVal)
+int multiply(int a, int b, char log_table[256], char antilog[255])
 {
-	int initVal = stateVal % MODULO;
+	if (a == 0) return 0;
+	
+	int x = log_table[a];
+	int y = log_table[b];
+	int log_mult = (x + y) % 255;
 
-	if (initVal < 0)
-		initVal += MODULO;
-	return initVal;
+	return antilog[log_mult];
 }
 
-void multInv(char state[NUM_ROWS][NUM_COLS])
+
+char bitwiseInv(char value, char log_table[256], char antilog[255])
 {
+	if (value == 0) return 0;
+	
+	const int aux = 3;
+	log_table[0] = 0;
+	
+	for (int i = 0, x = 1; i < 255; x = multiply(x, aux, log_table, antilog), i++)
+	{
+		log_table[x] = i;
+		antilog[i] = x;
+	}
+
+	int y = log_table[atoi(&value)];
+	int log_inv = 255 - y;
+
+	return antilog[log_inv];		
+}
+
+
+void multInv(char block[NUM_ROWS][NUM_COLS])
+{
+	char log_table[256], antilog[255];
+	
 	for (int m; m < NUM_ROWS; m++)
 	{
 		for (int n; n < NUM_COLS; n++)
 		{
-			state[m][n] = (char) modulo(state[m][n]);
-			
-			for (int i = 0; i < MODULO; i++)
-				if (modulo((state[m][n]) * i) == 1)
-					state[m][n] = i;	
+			block[m][n] = bitwiseInv(block[m][n], log_table, antilog);
 		}
 	}	
 }
-
 
 void sendCipherText(char state[NUM_ROWS][NUM_COLS])
 {
