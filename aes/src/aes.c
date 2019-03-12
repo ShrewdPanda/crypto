@@ -12,9 +12,6 @@
 
 #define C 0x63
 
-void multInv();
-
-
 void bitScrambler(char state[NUM_ROWS][NUM_COLS])
 {
 	for (int m = 0; m < NUM_ROWS; m++)
@@ -42,6 +39,21 @@ void bitUnScrambler(char state[NUM_ROWS][NUM_COLS])
 		}
 	}	
 	
+}
+
+void multInv(char block[NUM_ROWS][NUM_COLS])
+{
+	for (int m = 0; m < NUM_ROWS; m++)
+	{
+		for (int n = 0; n < NUM_COLS; n++)
+		{
+			for (int i = 0; i < MODULO; i++)
+			{	
+				if ((block[m][n] & i % MODULO) == 1)
+					block[m][n] = i;
+			}
+		}
+	}	
 }
 
 int getKey(int argc, char *argv[])
@@ -81,9 +93,9 @@ void invShiftRows(char state[NUM_ROWS][NUM_COLS])
 		for (int n = 0; n < NUM_COLS; n++)
 		{
 			if (m % 2 == 0)
-				State[m][n] = State[m][((n + m) % NUM_COLS)];
+				state[m][n] = state[m][((n + m) % NUM_COLS)];
 			else if (m % 2 == 1)
-				State[m][n] = State[m][((n + (m + (NUM_COLS / 2))) % NUM_COLS)];	
+				state[m][n] = state[m][((n + (m + (NUM_COLS / 2))) % NUM_COLS)];	
 		}
 	}
 }
@@ -91,7 +103,7 @@ void invShiftRows(char state[NUM_ROWS][NUM_COLS])
 
 void invSubBytes(char state[NUM_ROWS][NUM_COLS])	
 {
-	bitUnscrambler(state);
+	bitUnScrambler(state);
 	multInv(state);
 }
 
@@ -115,21 +127,6 @@ void mixColumns(char state[NUM_ROWS][NUM_COLS])
 	}
 }
 
-void multInv(char block[NUM_ROWS][NUM_COLS])
-{
-	for (int m = 0; m < NUM_ROWS; m++)
-	{
-		for (int n = 0; n < NUM_COLS; n++)
-		{
-			for (int i = 0; i < MODULO; i++)
-			{	
-				if ((block[m][n] & i % MODULO) == 1)
-					block[m][n] = i;
-			}
-		}
-	}	
-}
-
 void sendCipherText(char state[NUM_ROWS][NUM_COLS])
 {
 	FILE* outFile = fopen("cipher.txt", "w");
@@ -149,16 +146,16 @@ void sendCipherText(char state[NUM_ROWS][NUM_COLS])
 	fwrite(fileBuffer, sizeof(char), sizeof(fileBuffer), outFile);
 }
 
-void shiftRows(char State[NUM_ROWS][NUM_COLS])
+void shiftRows(char state[NUM_ROWS][NUM_COLS])
 {	
 	for (int m = 0; m < NUM_ROWS; m++)
 	{
 		for (int n = 0; n < NUM_COLS; n++)
 		{
 			if (m % 2 == 0)
-				State[m][n] = State[m][((n + m) % NUM_COLS)];
+				state[m][n] = state[m][((n + m) % NUM_COLS)];
 			else if (m % 2 == 1)
-				State[m][n] = State[m][((n + (m + (NUM_COLS / 2))) % NUM_COLS)];	
+				state[m][n] = state[m][((n + (m + (NUM_COLS / 2))) % NUM_COLS)];	
 		}
 	}
 }
