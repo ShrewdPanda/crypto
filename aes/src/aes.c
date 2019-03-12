@@ -82,6 +82,7 @@ void invShiftRows(char state[NUM_ROWS][NUM_COLS])
 
 void invSubBytes(char state[NUM_ROWS][NUM_COLS])	
 {
+	bitUnscrambler(state);
 	multInv(state);
 }
 
