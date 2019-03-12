@@ -76,7 +76,16 @@ void invMixColumns(char state[NUM_ROWS][NUM_COLS])
 
 void invShiftRows(char state[NUM_ROWS][NUM_COLS])
 {
-
+	for (int m = 0; m < NUM_ROWS; m++)
+	{
+		for (int n = 0; n < NUM_COLS; n++)
+		{
+			if (m % 2 == 0)
+				State[m][n] = State[m][((n + m) % NUM_COLS)];
+			else if (m % 2 == 1)
+				State[m][n] = State[m][((n + (m + (NUM_COLS / 2))) % NUM_COLS)];	
+		}
+	}
 }
 
 
