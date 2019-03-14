@@ -72,16 +72,40 @@ void invKeyRounds(char state[NUM_ROWS][NUM_COLS])
 
 }
 
+void mixColumns(char state[NUM_ROWS][NUM_COLS])
+{
+	for (int n = 0; n < NUM_COLS; n++)
+	{
+		state[0][n] ^= (state[0][n] * 0x02)  ^ ((state[1][n]) * 0x03)  ^ \
+			       ((state[2][n])) ^ ((state[3][n]));
+		
+		state[1][n] ^= (state[0][n])  ^ ((state[1][n]) * 0x02)  ^ \
+			       ((state[2][n]) * 0x03) ^ ((state[3][n]));
+	
+		state[2][n] ^= (state[0][n])  ^ ((state[1][n]))  ^ \
+			       ((state[2][n]) * 0x02) ^ ((state[3][n]) * 0x03);
+	
+		state[3][n] ^= (state[0][n] * 0x03)  ^ ((state[1][n]))  ^ \
+			       ((state[2][n])) ^ ((state[3][n]) * 0x02);
+	}
+}
+
 
 void invMixColumns(char state[NUM_ROWS][NUM_COLS])
 {
-	for (int m = 0; m < NUM_ROWS; m++)
+	for (int n = 0; n < NUM_COLS; n++)
 	{
-		for (int n = 0; n < NUM_COLS; n++)
-		{
-			state[m][n] = (state[m][n] * 2) ^ ((state[(m + 2) % NUM_ROWS][n]) * 3) ^ \
-				      (state[(m + 3) % NUM_ROWS][n]) ^ (state[((m + 4) % NUM_ROWS)][n]);
-		}
+		state[0][n] ^= (state[0][n] * 0x0E)  ^ ((state[1][n]) * 0x0B)  ^ \
+			       ((state[2][n]) * 0x0D) ^ ((state[3][n]) * 0x09);
+		
+		state[1][n] ^= (state[0][n] * 0x09)  ^ ((state[1][n]) * 0x0E)  ^ \
+			       ((state[2][n]) * 0x0B) ^ ((state[3][n]) * 0x0D);
+	
+		state[2][n] ^= (state[0][n] * 0x0D)  ^ ((state[1][n]) * 0x09)  ^ \
+			       ((state[2][n]) * 0x0E) ^ ((state[3][n]) * 0x0B);
+	
+		state[3][n] ^= (state[0][n] * 0x0B)  ^ ((state[1][n]) * 0x0D)  ^ \
+			       ((state[2][n]) * 0x09) ^ ((state[3][n]) * 0x0E);
 	}
 }
 
@@ -114,18 +138,6 @@ void keyRounds(char state[NUM_ROWS][NUM_COLS])
 	void applyRound();
 }
 
-
-void mixColumns(char state[NUM_ROWS][NUM_COLS])
-{
-	for (int m = 0; m < NUM_ROWS; m++)
-	{
-		for (int n = 0; n < NUM_COLS; n++)
-		{
-			state[m][n] = (state[m][n] * 2) ^ ((state[(m + 2) % NUM_ROWS][n]) * 3) ^ \
-				      (state[(m + 3) % NUM_ROWS][n]) ^ (state[((m + 4) % NUM_ROWS)][n]);
-		}
-	}
-}
 
 void sendCipherText(char state[NUM_ROWS][NUM_COLS])
 {
